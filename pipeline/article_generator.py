@@ -96,6 +96,7 @@ def _generate_content(keyword: str, existing_titles: list[dict]) -> str:
 
 Requirements:
 - Write 2000-3000 words in English
+- The current year is 2026. Always refer to tools and information as "in 2026". Never use 2024 or 2025.
 - Use Markdown formatting with H2 (##) and H3 (###) headings
 - Include a comparison table in Markdown table format
 - Include Pros and Cons for each tool mentioned
@@ -103,8 +104,9 @@ Requirements:
 - Write in a helpful, authoritative tone (use "we" perspective)
 - Naturally mention that tools can be tried through links in the article
 - Do NOT include the article title as H1 (it's handled by the template)
+- Do NOT overlap significantly with existing articles listed below. Cover a unique angle.
 
-Existing articles on this site (link to relevant ones naturally):
+Existing articles on this site (avoid duplicating these topics):
 {existing_list if existing_list else "No existing articles yet."}
 
 Output ONLY the Markdown article body. No frontmatter, no title heading."""

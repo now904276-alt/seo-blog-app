@@ -54,17 +54,44 @@ def load_seed_keywords(path: str = "admin/seed_keywords.json") -> list[str]:
 
 
 def pick_next_keyword() -> dict | None:
-    """DBからまだ使われていないキーワードを1件選んで返す。"""
+    """DBからまだ使われていないキーワードを1件選ぶ。既存記事と被りにくいものを優先。"""
     conn = get_db()
-    row = conn.execute(
+
+    # 既存記事のキーワードを取得して、似たテーマを避ける
+    existing = conn.execute(
+        "SELECT target_keyword FROM articles WHERE status='published'"
+    ).fetchall()
+    existing_words = set()
+    for row in existing:
+        for word in row["target_keyword"].lower().split():
+            if len(word) > 3:
+                existing_words.add(word)
+
+    # プールから候補を取得
+    candidates = conn.execute(
         "SELECT id, keyword FROM keywords "
-        "WHERE status='pool' ORDER BY discovered_at ASC LIMIT 1"
-    ).fetchone()
-    if not row:
+        "WHERE status='pool' ORDER BY discovered_at ASC LIMIT 50"
+    ).fetchall()
+
+    if not candidates:
         conn.close()
         return None
+
+    # 既存記事との重複度が低いものを優先
+    best = None
+    best_overlap = 999
+    for c in candidates:
+        words = set(w for w in c["keyword"].lower().split() if len(w) > 3)
+        overlap = len(words & existing_words)
+        if overlap < best_overlap:
+            best_overlap = overlap
+            best = c
+
+    if not best:
+        best = candidates[0]
+
     conn.execute(
-        "UPDATE keywords SET status='assigned' WHERE id=?", (row["id"],)
+        "UPDATE keywords SET status='assigned' WHERE id=?", (best["id"],)
     )
     conn.commit()
     conn.close()
