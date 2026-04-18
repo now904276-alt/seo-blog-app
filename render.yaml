@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: seo-blog-web
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    disk:
+      name: blog-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_PATH
+        value: /data/blog.db
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: SITE_NAME
+        value: AI Tool Pilot
+
+  - type: cron
+    name: daily-publish
+    runtime: python
+    schedule: "0 6 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/daily_publish.py
+    envVars:
+      - key: DATABASE_PATH
+        value: /data/blog.db
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: SITE_NAME
+        value: AI Tool Pilot

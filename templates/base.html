@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}Compare and discover the best AI tools for your workflow.{% endblock %}">
+    <link rel="canonical" href="{{ site_url }}{% block canonical %}{{ request.path }}{% endblock %}">
+
+    <!-- OGP -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{{ site_name }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Compare and discover the best AI tools.{% endblock %}">
+    <meta property="og:url" content="{{ site_url }}{{ request.path }}">
+    <meta property="og:site_name" content="{{ site_name }}">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-white text-gray-900 min-h-screen flex flex-col">
+
+    <header class="border-b border-gray-200">
+        <nav class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="text-xl font-bold text-gray-900">{{ site_name }}</a>
+            <div class="flex gap-6 text-sm text-gray-600">
+                <a href="/category/comparison" class="hover:text-gray-900">Comparisons</a>
+                <a href="/category/review" class="hover:text-gray-900">Reviews</a>
+                <a href="/category/guide" class="hover:text-gray-900">Guides</a>
+                <a href="/about" class="hover:text-gray-900">About</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-gray-200 mt-12">
+        <div class="max-w-4xl mx-auto px-4 py-6 text-sm text-gray-500 flex justify-between">
+            <span>&copy; {{ current_year }} {{ site_name }}</span>
+            <div class="flex gap-4">
+                <a href="/about" class="hover:text-gray-700">About</a>
+                <a href="/privacy" class="hover:text-gray-700">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

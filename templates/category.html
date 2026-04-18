@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category | capitalize }} — {{ site_name }}{% endblock %}
+{% block description %}Browse all {{ category }} articles on {{ site_name }}.{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8">{{ category | capitalize }}</h1>
+
+<div class="space-y-6">
+    {% for a in articles %}
+    <article class="border-b border-gray-100 pb-6">
+        <a href="/{{ a['slug'] }}" class="block group">
+            <h2 class="text-xl font-semibold group-hover:text-blue-600">{{ a['title'] }}</h2>
+            <p class="text-gray-600 mt-1">{{ a['meta_description'] }}</p>
+            {% if a['published_at'] %}
+            <time class="text-sm text-gray-400 mt-2 block">{{ a['published_at'][:10] }}</time>
+            {% endif %}
+        </a>
+    </article>
+    {% else %}
+    <p class="text-gray-500">No articles in this category yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

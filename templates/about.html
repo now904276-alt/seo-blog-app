@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}About — {{ site_name }}{% endblock %}
+{% block description %}About {{ site_name }}. We help you find the right AI tools through honest comparisons.{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">About {{ site_name }}</h1>
+
+<div class="prose prose-lg max-w-none">
+    <p>{{ site_name }} helps professionals and creators find the right AI tools through honest, data-driven comparisons.</p>
+
+    <h2>What We Do</h2>
+    <p>We compare AI tools across categories like writing, coding, image generation, and productivity. Every article includes feature breakdowns, pricing comparisons, and practical recommendations.</p>
+
+    <h2>Our Approach</h2>
+    <ul>
+        <li><strong>Data-driven:</strong> We base our recommendations on features, pricing, and real-world performance.</li>
+        <li><strong>Up-to-date:</strong> AI tools change fast. We regularly update our articles to reflect the latest versions.</li>
+        <li><strong>Transparent:</strong> Some links are affiliate links. This helps support the site at no cost to you.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Questions or suggestions? Reach out at <strong>hello@aitoolpilot.com</strong>.</p>
+</div>
+{% endblock %}

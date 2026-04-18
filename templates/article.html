@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article['title'] }} — {{ site_name }}{% endblock %}
+{% block description %}{{ article['meta_description'] }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ article['title'] }}{% endblock %}
+{% block og_description %}{{ article['meta_description'] }}{% endblock %}
+
+{% block head_extra %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "{{ article['schema_type'] or 'Article' }}",
+    "headline": "{{ article['title'] }}",
+    "description": "{{ article['meta_description'] }}",
+    "datePublished": "{{ article['published_at'] }}",
+    "dateModified": "{{ article['updated_at'] }}",
+    "publisher": {
+        "@type": "Organization",
+        "name": "{{ site_name }}"
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<article>
+    <header class="mb-8">
+        <div class="text-sm text-gray-500 mb-2">
+            <a href="/category/{{ article['category'] }}" class="hover:text-gray-700">{{ article['category'] }}</a>
+            {% if article['published_at'] %}
+            &middot; <time>{{ article['published_at'][:10] }}</time>
+            {% endif %}
+            {% if article['updated_at'] and article['updated_at'][:10] != article['published_at'][:10] %}
+            &middot; Updated {{ article['updated_at'][:10] }}
+            {% endif %}
+        </div>
+        <h1 class="text-3xl font-bold">{{ article['title'] }}</h1>
+    </header>
+
+    <div class="prose prose-lg max-w-none
+                prose-headings:font-bold
+                prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                prose-table:border-collapse prose-td:border prose-td:p-2 prose-th:border prose-th:p-2 prose-th:bg-gray-50">
+        {{ article['content_html'] | safe }}
+    </div>
+</article>
+
+<div class="mt-8 text-sm text-gray-500 italic">
+    <p>Disclosure: Some links in this article are affiliate links. We may earn a commission at no extra cost to you.</p>
+</div>
+{% endblock %}

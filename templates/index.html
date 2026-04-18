@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_name }} — Compare the Best AI Tools{% endblock %}
+{% block description %}Honest, data-driven comparisons of AI tools for writing, coding, design, and more.{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">AI Tool Comparisons & Reviews</h1>
+<p class="text-gray-600 mb-8">Honest, data-driven comparisons to help you pick the right AI tool.</p>
+
+<div class="space-y-6">
+    {% for a in articles %}
+    <article class="border-b border-gray-100 pb-6">
+        <a href="/{{ a['slug'] }}" class="block group">
+            <h2 class="text-xl font-semibold group-hover:text-blue-600">{{ a['title'] }}</h2>
+            <p class="text-gray-600 mt-1">{{ a['meta_description'] }}</p>
+            <div class="mt-2 text-sm text-gray-400 flex gap-4">
+                <span>{{ a['category'] }}</span>
+                {% if a['published_at'] %}
+                <time>{{ a['published_at'][:10] }}</time>
+                {% endif %}
+            </div>
+        </a>
+    </article>
+    {% else %}
+    <p class="text-gray-500">No articles published yet. Check back soon!</p>
+    {% endfor %}
+</div>
+{% endblock %}
