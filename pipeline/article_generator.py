@@ -12,7 +12,7 @@ from models import get_db
 
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-MODEL = "claude-sonnet-4-6-20250514"
+MODEL = "claude-sonnet-4-6"
 
 
 def generate_article(keyword: str, keyword_id: int) -> int | None:
