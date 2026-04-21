@@ -28,7 +28,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python scripts/daily_publish.py
     envVars:
-      - key: SITE_URL
+      - key: CRON_TARGET_URL
         sync: false
       - key: CRON_SECRET
         sync: false

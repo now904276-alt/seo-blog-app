@@ -12,23 +12,30 @@ import urllib.request
 
 
 def main():
-    site_url = os.environ.get("SITE_URL", "").rstrip("/")
+    # Cloudflare が前段にいる場合、cron は .onrender.com 直URL を叩く。
+    # CRON_TARGET_URL が未設定なら SITE_URL にフォールバック。
+    target = os.environ.get("CRON_TARGET_URL") or os.environ.get("SITE_URL", "")
+    target = target.rstrip("/")
     secret = os.environ.get("CRON_SECRET")
 
-    if not site_url:
-        print("[daily_publish] SITE_URL not set", file=sys.stderr)
+    if not target:
+        print("[daily_publish] CRON_TARGET_URL / SITE_URL not set", file=sys.stderr)
         sys.exit(1)
     if not secret:
         print("[daily_publish] CRON_SECRET not set", file=sys.stderr)
         sys.exit(1)
 
-    url = f"{site_url}/internal/daily-publish"
+    url = f"{target}/internal/daily-publish"
     print(f"[daily_publish] POST {url}")
 
     req = urllib.request.Request(
         url,
         method="POST",
-        headers={"X-Cron-Secret": secret, "Content-Type": "application/json"},
+        headers={
+            "X-Cron-Secret": secret,
+            "Content-Type": "application/json",
+            "User-Agent": "seo-blog-daily-publish/1.0",
+        },
         data=b"{}",
     )
 
