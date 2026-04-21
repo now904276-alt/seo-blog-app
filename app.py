@@ -1,4 +1,5 @@
 import os
+import threading
 import traceback
 
 from flask import Flask, render_template, abort, Response, request, jsonify
@@ -75,19 +76,18 @@ def create_app():
         secret = os.environ.get("CRON_SECRET")
         if not secret or request.headers.get("X-Cron-Secret") != secret:
             abort(403)
-        try:
-            from pipeline.daily_publisher import run_daily_publish
-            result = run_daily_publish()
-            return jsonify(result), 200
-        except Exception as e:
-            tb = traceback.format_exc()
-            print(f"[daily_publish] FAILED:\n{tb}", flush=True)
-            app.logger.error("daily_publish failed: %s", tb)
-            return jsonify({
-                "status": "error",
-                "error_type": type(e).__name__,
-                "message": str(e),
-            }), 500
+
+        def _run_in_background():
+            try:
+                from pipeline.daily_publisher import run_daily_publish
+                result = run_daily_publish()
+                print(f"[daily_publish] result: {result}", flush=True)
+            except Exception:
+                tb = traceback.format_exc()
+                print(f"[daily_publish] FAILED:\n{tb}", flush=True)
+
+        threading.Thread(target=_run_in_background, daemon=True).start()
+        return jsonify({"status": "accepted"}), 202
 
     @app.route("/about")
     def about():
