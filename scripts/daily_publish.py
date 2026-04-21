@@ -1,48 +1,53 @@
-"""毎日1記事を自動生成・公開するCronスクリプト。"""
+"""Cron から web service の /internal/daily-publish を叩くトリガー。
 
-import sys
+Render の Cron Job は永続ディスクにアクセスできないため、
+記事生成・DB 書き込みは disk を持つ web service 側で実行する。
+"""
+
+import json
 import os
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from models import init_db
-from pipeline.keyword_researcher import (
-    discover_keywords,
-    load_seed_keywords,
-    pick_next_keyword,
-)
-from pipeline.article_generator import generate_article
+import sys
+import urllib.error
+import urllib.request
 
 
 def main():
-    print("[daily_publish] Starting...")
-    init_db()
+    site_url = os.environ.get("SITE_URL", "").rstrip("/")
+    secret = os.environ.get("CRON_SECRET")
 
-    # 1. キーワードプールが空なら、シードから補充
-    kw = pick_next_keyword()
-    if not kw:
-        print("[daily_publish] Keyword pool empty. Discovering from seeds...")
-        seeds = load_seed_keywords()
-        added = discover_keywords(seeds)
-        print(f"[daily_publish] Added {added} keywords from seeds.")
-        kw = pick_next_keyword()
+    if not site_url:
+        print("[daily_publish] SITE_URL not set", file=sys.stderr)
+        sys.exit(1)
+    if not secret:
+        print("[daily_publish] CRON_SECRET not set", file=sys.stderr)
+        sys.exit(1)
 
-    if not kw:
-        print("[daily_publish] No keywords available. Skipping.")
-        return
+    url = f"{site_url}/internal/daily-publish"
+    print(f"[daily_publish] POST {url}")
 
-    print(f"[daily_publish] Generating article for: {kw['keyword']}")
+    req = urllib.request.Request(
+        url,
+        method="POST",
+        headers={"X-Cron-Secret": secret, "Content-Type": "application/json"},
+        data=b"{}",
+    )
 
-    # 2. 記事生成
     try:
-        article_id = generate_article(kw["keyword"], kw["id"])
-        if article_id:
-            print(f"[daily_publish] Published article #{article_id}")
-        else:
-            print("[daily_publish] Article generation returned None.")
-    except Exception as e:
-        print(f"[daily_publish] Error: {e}")
-        raise
+        with urllib.request.urlopen(req, timeout=600) as resp:
+            body = resp.read().decode("utf-8")
+            print(f"[daily_publish] HTTP {resp.status}: {body}")
+            if resp.status >= 400:
+                sys.exit(1)
+            parsed = json.loads(body) if body else {}
+            if parsed.get("status") == "error":
+                sys.exit(1)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        print(f"[daily_publish] HTTP {e.code}: {body}", file=sys.stderr)
+        sys.exit(1)
+    except urllib.error.URLError as e:
+        print(f"[daily_publish] URL error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,7 @@
-from flask import Flask, render_template, abort, Response
+import os
+import traceback
+
+from flask import Flask, render_template, abort, Response, request, jsonify
 from models import get_db, init_db
 from config import SITE_URL, SITE_NAME
 from datetime import datetime
@@ -66,6 +69,19 @@ def create_app():
     def robots():
         txt = f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n"
         return Response(txt, mimetype="text/plain")
+
+    @app.route("/internal/daily-publish", methods=["POST"])
+    def internal_daily_publish():
+        secret = os.environ.get("CRON_SECRET")
+        if not secret or request.headers.get("X-Cron-Secret") != secret:
+            abort(403)
+        from pipeline.daily_publisher import run_daily_publish
+        try:
+            result = run_daily_publish()
+            return jsonify(result), 200
+        except Exception as e:
+            app.logger.error("daily_publish failed: %s", traceback.format_exc())
+            return jsonify({"status": "error", "message": str(e)}), 500
 
     @app.route("/about")
     def about():

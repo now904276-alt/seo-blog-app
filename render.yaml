@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 600
     disk:
       name: blog-data
       mountPath: /data
@@ -18,6 +18,8 @@ services:
         sync: false
       - key: SITE_NAME
         value: AI Tool Pilot
+      - key: CRON_SECRET
+        sync: false
 
   - type: cron
     name: daily-publish
@@ -26,11 +28,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python scripts/daily_publish.py
     envVars:
-      - key: DATABASE_PATH
-        value: /data/blog.db
-      - key: ANTHROPIC_API_KEY
-        sync: false
       - key: SITE_URL
         sync: false
-      - key: SITE_NAME
-        value: AI Tool Pilot
+      - key: CRON_SECRET
+        sync: false
