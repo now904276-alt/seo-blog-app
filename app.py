@@ -75,13 +75,19 @@ def create_app():
         secret = os.environ.get("CRON_SECRET")
         if not secret or request.headers.get("X-Cron-Secret") != secret:
             abort(403)
-        from pipeline.daily_publisher import run_daily_publish
         try:
+            from pipeline.daily_publisher import run_daily_publish
             result = run_daily_publish()
             return jsonify(result), 200
         except Exception as e:
-            app.logger.error("daily_publish failed: %s", traceback.format_exc())
-            return jsonify({"status": "error", "message": str(e)}), 500
+            tb = traceback.format_exc()
+            print(f"[daily_publish] FAILED:\n{tb}", flush=True)
+            app.logger.error("daily_publish failed: %s", tb)
+            return jsonify({
+                "status": "error",
+                "error_type": type(e).__name__,
+                "message": str(e),
+            }), 500
 
     @app.route("/about")
     def about():
