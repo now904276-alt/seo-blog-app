@@ -95,4 +95,4 @@ def pick_next_keyword() -> dict | None:
     )
     conn.commit()
     conn.close()
-    return {"id": row["id"], "keyword": row["keyword"]}
+    return {"id": best["id"], "keyword": best["keyword"]}
