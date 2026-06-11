@@ -89,6 +89,35 @@ def create_app():
         threading.Thread(target=_run_in_background, daemon=True).start()
         return jsonify({"status": "accepted"}), 202
 
+    @app.route("/internal/weekly-improve", methods=["POST"])
+    def internal_weekly_improve():
+        secret = os.environ.get("CRON_SECRET")
+        if not secret or request.headers.get("X-Cron-Secret") != secret:
+            abort(403)
+
+        def _run_in_background():
+            try:
+                from improvement.weekly_improver import run_weekly_improvement
+                result = run_weekly_improvement()
+                print(f"[weekly_improve] result: {result}", flush=True)
+            except Exception:
+                tb = traceback.format_exc()
+                print(f"[weekly_improve] FAILED:\n{tb}", flush=True)
+
+        threading.Thread(target=_run_in_background, daemon=True).start()
+        return jsonify({"status": "accepted"}), 202
+
+    @app.route("/ads.txt")
+    def ads_txt():
+        return Response(
+            "google.com, pub-6998202502441229, DIRECT, f08c47fec0942fa0\n",
+            mimetype="text/plain",
+        )
+
+    @app.route("/contact")
+    def contact():
+        return render_template("contact.html")
+
     @app.route("/about")
     def about():
         return render_template("about.html")

@@ -20,6 +20,10 @@ services:
         value: AI Tool Pilot
       - key: CRON_SECRET
         sync: false
+      - key: GSC_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: GSC_PROPERTY
+        sync: false
 
   - type: cron
     name: daily-publish
@@ -27,6 +31,18 @@ services:
     schedule: "0 6 * * *"
     buildCommand: pip install -r requirements.txt
     startCommand: python scripts/daily_publish.py
+    envVars:
+      - key: CRON_TARGET_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+
+  - type: cron
+    name: weekly-improve
+    runtime: python
+    schedule: "30 6 * * 1"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/weekly_improve.py
     envVars:
       - key: CRON_TARGET_URL
         sync: false

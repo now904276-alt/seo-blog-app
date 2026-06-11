@@ -98,9 +98,13 @@ Requirements:
 - Write 2000-3000 words in English
 - The current year is 2026. Always refer to tools and information as "in 2026". Never use 2024 or 2025.
 - Use Markdown formatting with H2 (##) and H3 (###) headings
-- Include a comparison table in Markdown table format
+- Pick ONE clearly distinct angle that matches the search intent of the keyword
+- Open with a short "How We Evaluate" note (2-3 sentences) explaining the selection criteria used in this article
+- Include a comparison table in Markdown table format with concrete columns (pricing, key limits, platform)
+- Be specific: actual pricing tiers, feature limits, and platform availability as of 2026. No vague filler like "in today's fast-paced world"
 - Include Pros and Cons for each tool mentioned
-- Include a "Verdict" or "Our Pick" section at the end
+- Include a "## Frequently Asked Questions" section with 4-6 concise Q&As (### for each question)
+- End with a "## Verdict" section with a clear recommendation
 - Write in a helpful, authoritative tone (use "we" perspective)
 - Naturally mention that tools can be tried through links in the article
 - Do NOT include the article title as H1 (it's handled by the template)
@@ -113,7 +117,7 @@ Output ONLY the Markdown article body. No frontmatter, no title heading."""
 
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4096,
+        max_tokens=8192,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.content[0].text
