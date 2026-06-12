@@ -2,7 +2,9 @@ import os
 import threading
 import traceback
 
-from flask import Flask, render_template, abort, Response, request, jsonify
+from flask import (
+    Flask, render_template, abort, Response, request, jsonify, redirect
+)
 from models import get_db, init_db
 from config import SITE_URL, SITE_NAME
 from datetime import datetime
@@ -31,11 +33,15 @@ def create_app():
     def article(slug):
         conn = get_db()
         row = conn.execute(
-            "SELECT * FROM articles WHERE slug=? AND status='published'",
+            "SELECT * FROM articles WHERE slug=? AND status IN ('published', 'redirected')",
             (slug,),
         ).fetchone()
         conn.close()
         if not row:
+            abort(404)
+        if row["status"] == "redirected":
+            if row["redirect_to"]:
+                return redirect(f"/{row['redirect_to']}", code=301)
             abort(404)
         return render_template("article.html", article=row)
 

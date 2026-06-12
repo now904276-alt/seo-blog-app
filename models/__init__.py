@@ -77,5 +77,16 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_keywords_status ON keywords(status);
         CREATE INDEX IF NOT EXISTS idx_performance_logs_article ON performance_logs(article_id, date);
     """)
+    _migrate(conn)
     conn.commit()
     conn.close()
+
+
+def _migrate(conn):
+    """既存DBへの後方互換マイグレーション（冪等）。"""
+    columns = {
+        row["name"] for row in conn.execute("PRAGMA table_info(articles)")
+    }
+    # 2026-06-12: 近重複記事の301集約用（status='redirected' の行の転送先slug）
+    if "redirect_to" not in columns:
+        conn.execute("ALTER TABLE articles ADD COLUMN redirect_to TEXT")

@@ -116,10 +116,12 @@ def pick_next_keyword() -> dict | None:
     """
     conn = get_db()
 
+    # redirected（集約済み）も含める: 集約で消したテーマを再生成しないため
     existing_keywords = [
         r["target_keyword"]
         for r in conn.execute(
-            "SELECT target_keyword FROM articles WHERE status='published'"
+            "SELECT target_keyword FROM articles "
+            "WHERE status IN ('published', 'redirected')"
         ).fetchall()
     ]
 
