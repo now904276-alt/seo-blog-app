@@ -2,8 +2,14 @@
 
 API: webmasters v3 / searchanalytics.query
 https://developers.google.com/webmaster-tools/v1/searchanalytics/query
-認証: サービスアカウント（JSON キーを GSC_SERVICE_ACCOUNT_JSON 環境変数で渡す。
-サービスアカウントのメールアドレスを GSC プロパティのユーザーに追加しておくこと）
+
+認証（優先順）:
+  1. GSC_OAUTH_TOKEN_JSON     — プロパティ所有者の OAuth トークン
+     （scripts/gsc_oauth_setup.py で一度だけ生成。リフレッシュトークンで自動更新）
+  2. GSC_SERVICE_ACCOUNT_JSON — サービスアカウントの JSON キー
+     （SA を GSC ユーザーに追加できるようになったらこちらに移行可能。
+       2026-04 以降、GSC への SA 追加が「メールアドレスが見つかりません」になる
+       Google 側バグがあり、それまでは OAuth を使う）
 """
 
 import json
@@ -12,6 +18,7 @@ from datetime import date, timedelta
 from urllib.parse import urlparse
 
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials as OAuthCredentials
 from googleapiclient.discovery import build
 
 from models import get_db
@@ -23,15 +30,28 @@ DATA_LAG_DAYS = 3
 DEFAULT_PROPERTY = "https://aidewalt.com/"
 
 
-def _get_service():
-    raw = os.environ.get("GSC_SERVICE_ACCOUNT_JSON")
-    if not raw:
-        raise RuntimeError("GSC_SERVICE_ACCOUNT_JSON is not set")
-    info = json.loads(raw)
-    creds = service_account.Credentials.from_service_account_info(
-        info, scopes=SCOPES
+def _get_credentials():
+    oauth_raw = os.environ.get("GSC_OAUTH_TOKEN_JSON")
+    if oauth_raw:
+        info = json.loads(oauth_raw)
+        return OAuthCredentials.from_authorized_user_info(info, scopes=SCOPES)
+
+    sa_raw = os.environ.get("GSC_SERVICE_ACCOUNT_JSON")
+    if sa_raw:
+        info = json.loads(sa_raw)
+        return service_account.Credentials.from_service_account_info(
+            info, scopes=SCOPES
+        )
+
+    raise RuntimeError(
+        "GSC_OAUTH_TOKEN_JSON or GSC_SERVICE_ACCOUNT_JSON must be set"
     )
-    return build("webmasters", "v3", credentials=creds, cache_discovery=False)
+
+
+def _get_service():
+    return build(
+        "webmasters", "v3", credentials=_get_credentials(), cache_discovery=False
+    )
 
 
 def _url_to_slug(page_url: str) -> str | None:
